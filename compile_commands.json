@@ -1,0 +1,19 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-include",
+      "rte_config.h",
+      "-march=native",
+      "-I/usr/local/include",
+      "-c",
+      "-Wl,--as-needed",
+      "-o",
+      "objs/main.o",
+      "srcs/main.c"
+    ],
+    "directory": "/home/chulee/l2fwd_log",
+    "file": "/home/chulee/l2fwd_log/srcs/main.c",
+    "output": "/home/chulee/l2fwd_log/objs/main.o"
+  }
+]
