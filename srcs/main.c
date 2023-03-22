@@ -2,6 +2,7 @@
  * Copyright(c) 2010-2016 Intel Corporation
  */
 
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +38,7 @@
 #include <rte_mempool.h>
 #include <rte_mbuf.h>
 #include <rte_string_fns.h>
+#include <arpa/inet.h>
 
 static volatile bool force_quit;
 
@@ -196,24 +198,19 @@ l2fwd_simple_forward(struct rte_mbuf *m, unsigned portid)
 }
 /* >8 End of simple forward. */
 
-static void	ntk_print_ip_addr(uint32_t ip_addr)
-{
-	printf("ip = %d.%d.%d.%d ", ip_addr >> 24, ip_addr >> 16 & 0x000000ff, ip_addr >> 8 & 0x000000ff, ip_addr & 0x000000ff);
-}
-
 static void	ntk_check_ip_address(struct rte_mbuf *m)
 {
 	struct rte_ether_hdr	*eth_hdr;
-	struct rte_ipv4_hdr			*ip_hdr;
+	struct rte_ipv4_hdr		*ip_hdr;
+	char					src_ip_str[INET_ADDRSTRLEN];
+	char					dst_ip_str[INET_ADDRSTRLEN];
 
 	eth_hdr = rte_pktmbuf_mtod(m, struct rte_ether_hdr *);
 	if (rte_be_to_cpu_16(eth_hdr->ether_type) == RTE_ETHER_TYPE_IPV4) {
 	    ip_hdr = (struct rte_ipv4_hdr *)(eth_hdr + 1); // Add the size of the Ethernet header
-		uint32_t src_ip = rte_be_to_cpu_32(ip_hdr->src_addr);
-		uint32_t dst_ip = rte_be_to_cpu_32(ip_hdr->dst_addr);
-		ntk_print_ip_addr(src_ip);
-		ntk_print_ip_addr(dst_ip);
-		printf("\n");
+		inet_ntop(AF_INET, (void *)&ip_hdr->dst_addr, dst_ip_str, INET_ADDRSTRLEN);
+		inet_ntop(AF_INET, (void *)&ip_hdr->src_addr, src_ip_str, INET_ADDRSTRLEN);
+		printf("src_ip = %s, dst_ip = %s\n", src_ip_str, dst_ip_str);
 	} else if (rte_be_to_cpu_16(eth_hdr->ether_type) == RTE_ETHER_TYPE_IPV6) {
 	    // For IPv6, you will need to use 'struct ipv6_hdr' instead of 'struct ipv4_hdr'
 	    // ...
@@ -316,9 +313,7 @@ l2fwd_main_loop(void)
 
 			for (j = 0; j < nb_rx; j++) {
 				m = pkts_burst[j];
-
 				ntk_check_ip_address(m);
-
 				rte_prefetch0(rte_pktmbuf_mtod(m, void *));
 				l2fwd_simple_forward(m, portid);
 			}

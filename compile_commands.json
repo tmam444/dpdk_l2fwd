@@ -2,18 +2,21 @@
   {
     "arguments": [
       "/usr/bin/cc",
+      "-O3",
+      "-I./includes",
       "-include",
       "rte_config.h",
       "-march=native",
       "-I/usr/local/include",
+      "-DALLOW_EXPERIMENTAL_API",
       "-c",
       "-Wl,--as-needed",
       "-o",
       "objs/main.o",
       "srcs/main.c"
     ],
-    "directory": "/home/chulee/l2fwd_log",
-    "file": "/home/chulee/l2fwd_log/srcs/main.c",
-    "output": "/home/chulee/l2fwd_log/objs/main.o"
+    "directory": "/home/chulee/nstek",
+    "file": "/home/chulee/nstek/srcs/main.c",
+    "output": "/home/chulee/nstek/objs/main.o"
   }
 ]

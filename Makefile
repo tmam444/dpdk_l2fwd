@@ -6,7 +6,7 @@
 #    By: chulee <chulee@nstek.com>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/21 14:04:03 by chulee            #+#    #+#              #
-#    Updated: 2023/03/21 14:31:08 by chulee           ###   ########.fr        #
+#    Updated: 2023/03/22 15:04:15 by chulee           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME=l2fwd
 SRCS=srcs/main.c
 OBJS = $(addprefix objs/, $(notdir $(SRCS:.c=.o)))
 CC = cc
-CFLAGS = $(shell pkg-config --cflags libdpdk)
+CFLAGS = -O3 -I./includes $(shell pkg-config --cflags libdpdk) -DALLOW_EXPERIMENTAL_API
 LDFLAGS = $(shell pkg-config --libs libdpdk)
 OBJ_FILES = $(OBJS)
 
