@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   test_table.c                                       :+:      :+:    :+:   */
+/*   l2fwd_table.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 16:28:39 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/23 11:03:00 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/23 14:08:42 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "table.h"
+#include "l2fwd.h"
 
 int	ntk_compare(const void *x, const void *y)
 {
@@ -29,28 +29,37 @@ int	ntk_compare(const void *x, const void *y)
 
 unsigned int ntk_hash(const void *__key)
 {
-	const char	*key = __key;
-    unsigned long hash = 5381;
+	const char		*key = __key;
+    unsigned long	hash = 5381;
     int c;
+
     while ((c = *key++))
         hash = (((hash << 5) + hash) + c) % TABLE_SIZE;
     return (hash % TABLE_SIZE);
 }
 
-void	ntk_put_table(Table *table, const char *__key, int __value)
+void	ntk_put_table(Table *table, const char *__key, uint64_t packet_size, enum e_direction type)
 {
-	char	*key = malloc(strlen(__key) + 1);
-	int		*value = malloc(sizeof(int));
-	int		*prev;
+	statistics	*prev_value = get_table(table, __key);
+	char		*key = malloc(strlen(__key) + 1);
+	statistics	*value = malloc(sizeof(statistics));
 
 	assert(key != NULL && value != NULL);
-	*value = __value;
+	if (prev_value != NULL)
+		memcpy(value, prev_value, sizeof(statistics));
+	else
+		memset(value, 0, sizeof(statistics));
+	if (type == RX)
+		value->rx += packet_size;
+	else if (type == TX)
+		value->tx += packet_size;
 	strcpy(key, __key);
-	prev = put_table(table, key, value);
-	if (prev != NULL)
-		free(prev);
+	prev_value = put_table(table, key, value);
+	if (prev_value != NULL)
+		free(prev_value);
 }
 
+/*
 int	main(void)
 {
 	Table	*table = new_table(TABLE_SIZE, ntk_compare, ntk_hash);
@@ -61,3 +70,4 @@ int	main(void)
 	free_table(table);
 	return (0);
 }
+*/

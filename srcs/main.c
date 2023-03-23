@@ -3,6 +3,7 @@
  */
 
 #include <netinet/in.h>
+#include <rte_build_config.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +40,8 @@
 #include <rte_mbuf.h>
 #include <rte_string_fns.h>
 #include <arpa/inet.h>
+#include "l2fwd.h"
+#include "table.h"
 
 static volatile bool force_quit;
 
@@ -113,6 +116,8 @@ struct l2fwd_port_statistics port_statistics[RTE_MAX_ETHPORTS];
 #define MAX_TIMER_PERIOD 86400 /* 1 day max */
 /* A tsc-based timer responsible for triggering statistics printout */
 static uint64_t timer_period = 3; /* default period is 10 seconds */
+
+Table	*packet_statistics[RTE_MAX_ETHPORTS];
 
 /* Print out statistics on packets dropped */
 static void
@@ -198,7 +203,8 @@ l2fwd_simple_forward(struct rte_mbuf *m, unsigned portid)
 }
 /* >8 End of simple forward. */
 
-static void	ntk_check_ip_address(struct rte_mbuf *m)
+static void
+ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, unsigned int size, enum e_direction type)
 {
 	struct rte_ether_hdr	*eth_hdr;
 	struct rte_ipv4_hdr		*ip_hdr;
@@ -208,14 +214,10 @@ static void	ntk_check_ip_address(struct rte_mbuf *m)
 	eth_hdr = rte_pktmbuf_mtod(m, struct rte_ether_hdr *);
 	if (rte_be_to_cpu_16(eth_hdr->ether_type) == RTE_ETHER_TYPE_IPV4) {
 	    ip_hdr = (struct rte_ipv4_hdr *)(eth_hdr + 1); // Add the size of the Ethernet header
+		printf("size = %u, length = %hu\n", size, ip_hdr->total_length);
 		inet_ntop(AF_INET, (void *)&ip_hdr->dst_addr, dst_ip_str, INET_ADDRSTRLEN);
 		inet_ntop(AF_INET, (void *)&ip_hdr->src_addr, src_ip_str, INET_ADDRSTRLEN);
-		printf("src_ip = %s, dst_ip = %s\n", src_ip_str, dst_ip_str);
-	} else if (rte_be_to_cpu_16(eth_hdr->ether_type) == RTE_ETHER_TYPE_IPV6) {
-	    // For IPv6, you will need to use 'struct ipv6_hdr' instead of 'struct ipv4_hdr'
-	    // ...
-	} else {
-	    // Not an IPv4 or IPv6 packet, handle appropriately
+		ntk_put_table(packet_statistics[port_id], src_ip_str, size, type);
 	}
 }
 
@@ -248,8 +250,9 @@ l2fwd_main_loop(void)
 	RTE_LOG(INFO, L2FWD, "entering main loop on lcore %u\n", lcore_id);
 
 	for (i = 0; i < qconf->n_rx_port; i++) {
-
 		portid = qconf->rx_port_list[i];
+		if (packet_statistics[portid] == NULL)
+			packet_statistics[portid] = new_table(TABLE_SIZE, ntk_compare, ntk_hash);
 		RTE_LOG(INFO, L2FWD, " -- lcoreid=%u portid=%u\n", lcore_id,
 			portid);
 
@@ -270,10 +273,11 @@ l2fwd_main_loop(void)
 
 				portid = l2fwd_dst_ports[qconf->rx_port_list[i]];
 				buffer = tx_buffer[portid];
-
 				sent = rte_eth_tx_buffer_flush(portid, 0, buffer);
 				if (sent)
+				{
 					port_statistics[portid].tx += sent;
+				}
 
 			}
 
@@ -313,7 +317,7 @@ l2fwd_main_loop(void)
 
 			for (j = 0; j < nb_rx; j++) {
 				m = pkts_burst[j];
-				ntk_check_ip_address(m);
+				ntk_add_packet_length(m, portid, nb_rx, RX);
 				rte_prefetch0(rte_pktmbuf_mtod(m, void *));
 				l2fwd_simple_forward(m, portid);
 			}
@@ -321,8 +325,6 @@ l2fwd_main_loop(void)
 		/* >8 End of read packet from RX queues. */
 	}
 }
-
-
 
 static int
 l2fwd_launch_one_lcore(__rte_unused void *dummy)
