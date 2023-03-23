@@ -6,7 +6,7 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 13:22:40 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/23 17:04:25 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/23 17:28:09 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,5 @@ void*			get_table(Table *table, const void *key);
 void*			put_table(Table *table, const void *key, void *value);
 void			free_table(Table *table);
 const void**	key_set(Table *table);
-void			free_key_set(const void **key_set);
 
 #endif

@@ -251,9 +251,9 @@ ntk_print_statistics(void)
 			continue;
 		cur_table = packet_statistics[portid];
 		keys = key_set(cur_table);
-		for (temp = (const char **)keys; temp != NULL; temp++)
+		for (temp = (const char **)keys; *temp != NULL; temp++)
 			printf("%s ", *temp);
-		free_key_set(keys);
+		free(keys);
 	}
 }
 

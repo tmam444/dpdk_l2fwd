@@ -6,7 +6,7 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 16:28:39 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/23 14:08:42 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/23 18:20:09 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,11 +62,23 @@ void	ntk_put_table(Table *table, const char *__key, uint64_t packet_size, enum e
 /*
 int	main(void)
 {
-	Table	*table = new_table(TABLE_SIZE, ntk_compare, ntk_hash);
+	Table		*table = new_table(TABLE_SIZE, ntk_compare, ntk_hash);
+	statistics	*cur_statistics;
+	const void	**keys;
+	const char	**temp;
 
-	ntk_put_table(table, "192.168.0.1", 123);
-	ntk_put_table(table, "192.168.100.84", 456);
-	printf("192.168.0.1 = %d", *((int *)get_table(table, "192.168.0.1")));
+	ntk_put_table(table, "192.168.0.1", 123, RX);
+	ntk_put_table(table, "192.168.100.84", 456, RX);
+	cur_statistics = get_table(table, "192.168.0.1");
+	printf("192.168.0.1 = rx:%lu, tx:%lu\n", cur_statistics->rx, cur_statistics->tx);
+	keys = key_set(table);
+	temp = (const char **)keys;
+	while (*temp != NULL)
+	{
+		printf("%s aa\n", *temp);
+		temp++;
+	}
+	free(keys);
 	free_table(table);
 	return (0);
 }

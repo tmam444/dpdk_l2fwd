@@ -6,7 +6,7 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 15:01:28 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/23 16:59:58 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/23 18:16:14 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,23 +118,4 @@ const void**	key_set(Table *table)
 	}
 	ret[j] = NULL; // end_point
 	return (ret);
-}
-
-void	free_key_set(const void **key_set)
-{
-	const void **temp = key_set;
-
-	if (key_set)
-	{
-		if (temp)
-		{
-			while (*temp != NULL)
-			{
-				free(temp);
-				temp++;
-			}
-			free(temp);
-		}
-		free(key_set);
-	}
 }
