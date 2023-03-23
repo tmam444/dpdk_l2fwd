@@ -204,7 +204,22 @@ l2fwd_simple_forward(struct rte_mbuf *m, unsigned portid)
 /* >8 End of simple forward. */
 
 static void
-ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, unsigned int size, enum e_direction type)
+ntk_print_packet_data_to_hex(struct rte_mbuf *m)
+{
+        uint8_t *data = rte_pktmbuf_mtod(m, uint8_t *);
+        int     i;
+
+        for (i = 0; i < m->pkt_len; i++)
+        {
+                printf("%02X ", data[i]);
+                if ((i + 1) % 16 == 0)
+                        printf("\n");
+        }
+        printf("\n");
+}
+
+static void
+ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, enum e_direction type)
 {
 	struct rte_ether_hdr	*eth_hdr;
 	struct rte_ipv4_hdr		*ip_hdr;
@@ -214,10 +229,31 @@ ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, unsigned int siz
 	eth_hdr = rte_pktmbuf_mtod(m, struct rte_ether_hdr *);
 	if (rte_be_to_cpu_16(eth_hdr->ether_type) == RTE_ETHER_TYPE_IPV4) {
 	    ip_hdr = (struct rte_ipv4_hdr *)(eth_hdr + 1); // Add the size of the Ethernet header
-		printf("size = %u, length = %hu\n", size, ip_hdr->total_length);
 		inet_ntop(AF_INET, (void *)&ip_hdr->dst_addr, dst_ip_str, INET_ADDRSTRLEN);
 		inet_ntop(AF_INET, (void *)&ip_hdr->src_addr, src_ip_str, INET_ADDRSTRLEN);
-		ntk_put_table(packet_statistics[port_id], src_ip_str, size, type);
+		printf("source_ip = %s\n", src_ip_str);
+		ntk_put_table(packet_statistics[port_id], src_ip_str, m->pkt_len, type);
+	}
+}
+
+static void
+ntk_print_statistics(void)
+{
+	unsigned int	portid;
+	Table			*cur_table;
+	statistics		*cur_statistics;
+	const void		**keys;
+	const char		**temp;
+
+	for (portid = 0; portid < RTE_MAX_ETHPORTS; portid++) {
+		/* skip disabled ports */
+		if ((l2fwd_enabled_port_mask & (1 << portid)) == 0)
+			continue;
+		cur_table = packet_statistics[portid];
+		keys = key_set(cur_table);
+		for (temp = (const char **)keys; temp != NULL; temp++)
+			printf("%s ", *temp);
+		free_key_set(keys);
 	}
 }
 
@@ -293,6 +329,7 @@ l2fwd_main_loop(void)
 					/* do this only on main core */
 					if (lcore_id == rte_get_main_lcore()) {
 						// print_stats();
+						ntk_print_statistics();
 						/* reset the timer */
 						timer_tsc = 0;
 					}
@@ -317,7 +354,7 @@ l2fwd_main_loop(void)
 
 			for (j = 0; j < nb_rx; j++) {
 				m = pkts_burst[j];
-				ntk_add_packet_length(m, portid, nb_rx, RX);
+				ntk_add_packet_length(m, portid, RX);
 				rte_prefetch0(rte_pktmbuf_mtod(m, void *));
 				l2fwd_simple_forward(m, portid);
 			}

@@ -6,7 +6,7 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 15:01:28 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/22 18:56:12 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/23 16:59:58 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,3 +103,38 @@ void	free_table(Table *table)
 	}
 }
 
+const void**	key_set(Table *table)
+{
+	const void	**ret = malloc(sizeof(const void *) * (table->length + 1));
+	int		i, j;
+	Node	*cur;
+
+	assert(ret != NULL && table != NULL);
+	j = 0;
+	for (i = 0; i < table->size; i++)
+	{
+		for (cur = table->buckets[i]; cur != NULL; cur = cur->next)
+			ret[j++] = cur->key;
+	}
+	ret[j] = NULL; // end_point
+	return (ret);
+}
+
+void	free_key_set(const void **key_set)
+{
+	const void **temp = key_set;
+
+	if (key_set)
+	{
+		if (temp)
+		{
+			while (*temp != NULL)
+			{
+				free(temp);
+				temp++;
+			}
+			free(temp);
+		}
+		free(key_set);
+	}
+}
