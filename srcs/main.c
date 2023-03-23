@@ -231,7 +231,6 @@ ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, enum e_direction
 	    ip_hdr = (struct rte_ipv4_hdr *)(eth_hdr + 1); // Add the size of the Ethernet header
 		inet_ntop(AF_INET, (void *)&ip_hdr->dst_addr, dst_ip_str, INET_ADDRSTRLEN);
 		inet_ntop(AF_INET, (void *)&ip_hdr->src_addr, src_ip_str, INET_ADDRSTRLEN);
-		printf("source_ip = %s\n", src_ip_str);
 		ntk_put_table(packet_statistics[port_id], src_ip_str, m->pkt_len, type);
 	}
 }
@@ -252,9 +251,13 @@ ntk_print_statistics(void)
 		cur_table = packet_statistics[portid];
 		keys = key_set(cur_table);
 		for (temp = (const char **)keys; *temp != NULL; temp++)
-			printf("%s ", *temp);
+		{
+			cur_statistics = get_table(cur_table, *temp);
+			printf("%s : tx=%lu, rx=%lu\n", *temp, cur_statistics->tx, cur_statistics->rx);
+		}
 		free(keys);
 	}
+	fflush(stdout);
 }
 
 /* main processing loop */

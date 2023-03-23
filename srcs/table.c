@@ -6,7 +6,7 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 15:01:28 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/23 18:16:14 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/23 18:23:13 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,8 +106,8 @@ void	free_table(Table *table)
 const void**	key_set(Table *table)
 {
 	const void	**ret = malloc(sizeof(const void *) * (table->length + 1));
-	int		i, j;
-	Node	*cur;
+	int			i, j;
+	Node		*cur;
 
 	assert(ret != NULL && table != NULL);
 	j = 0;
