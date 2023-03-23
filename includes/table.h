@@ -6,12 +6,13 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 13:22:40 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/22 17:39:58 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/23 10:48:31 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef TABLE_H
 # define TABLE_H
+# define TABLE_SIZE 100000
 # include <stdlib.h>
 # include <stdio.h>
 # include <assert.h>

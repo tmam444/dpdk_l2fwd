@@ -6,7 +6,7 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 16:28:39 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/22 18:19:54 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/23 11:03:00 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,11 @@ int	ntk_compare(const void *x, const void *y)
 unsigned int ntk_hash(const void *__key)
 {
 	const char	*key = __key;
-
-	return ((unsigned long)key[0] % 10000);
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *key++))
+        hash = (((hash << 5) + hash) + c) % TABLE_SIZE;
+    return (hash % TABLE_SIZE);
 }
 
 void	ntk_put_table(Table *table, const char *__key, int __value)
@@ -50,7 +53,7 @@ void	ntk_put_table(Table *table, const char *__key, int __value)
 
 int	main(void)
 {
-	Table	*table = new_table(10000, ntk_compare, ntk_hash);
+	Table	*table = new_table(TABLE_SIZE, ntk_compare, ntk_hash);
 
 	ntk_put_table(table, "192.168.0.1", 123);
 	ntk_put_table(table, "192.168.100.84", 456);
