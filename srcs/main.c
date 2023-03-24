@@ -119,6 +119,93 @@ static uint64_t timer_period = 3; /* default period is 10 seconds */
 
 Table	*packet_statistics[RTE_MAX_ETHPORTS];
 
+static void
+ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, enum e_direction type)
+{
+	struct rte_ether_hdr	*eth_hdr;
+	struct rte_ipv4_hdr		*ip_hdr;
+	char					src_ip_str[INET_ADDRSTRLEN];
+	char					dst_ip_str[INET_ADDRSTRLEN];
+
+	eth_hdr = rte_pktmbuf_mtod(m, struct rte_ether_hdr *);
+	if (rte_be_to_cpu_16(eth_hdr->ether_type) == RTE_ETHER_TYPE_IPV4) {
+	    ip_hdr = (struct rte_ipv4_hdr *)(eth_hdr + 1); // Add the size of the Ethernet header
+		inet_ntop(AF_INET, (void *)&ip_hdr->dst_addr, dst_ip_str, INET_ADDRSTRLEN);
+		inet_ntop(AF_INET, (void *)&ip_hdr->src_addr, src_ip_str, INET_ADDRSTRLEN);
+		ntk_put_table(packet_statistics[port_id], src_ip_str, m->pkt_len, type);
+	}
+}
+
+static void
+ntk_print_statistics(void)
+{
+	unsigned int	int_portid, ext_portid;
+	int				i, j;
+	Table			*int_table, *ext_table;
+	statistics		*cur_statistics;
+	statistics		total_statistics[2];
+	const void		**int_keys, **ext_keys;
+	const char		**temp_int_keys, **temp_ext_keys;
+	const char		clr[] = { 27, '[', '2', 'J', '\0' };
+	const char		 topLeft[] = { 27, '[', '1', ';', '1', 'H','\0' };
+
+	/* Clear screen and move to top left */
+	printf("%s%s", clr, topLeft);
+	for (i = 0; i < nb_port_pair_params; i++)
+	{
+		total_statistics[0].rx = 0;
+		total_statistics[0].tx = 0;
+		total_statistics[1].rx = 0;
+		total_statistics[1].tx = 0;
+		int_portid = port_pair_params_array[i].port[0];
+		ext_portid = port_pair_params_array[i].port[1];
+		printf("port pair : (%d) - (%d)\n", int_portid, ext_portid);
+		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
+		printf("|%36s%32s|%36s%32s|\n", "INT", " ", "EXT", " ");
+		printf("|--------------------------------------------------------------------|--------------------------------------------------------------------|\n");
+		printf("|%10s%8s|%16s%8s|%16s%8s|%10s%8s|%16s%8s|%16s%8s|\n", "IP", " ", "RX Byte" , " ", "TX Byte", " " , "IP", " ", "RX Byte", " ", "TX Byte", " ");
+		printf("|--------------------------------------------------------------------|--------------------------------------------------------------------|\n");
+		int_table = packet_statistics[int_portid];
+		ext_table = packet_statistics[ext_portid];
+		int_keys = key_set(int_table);
+		ext_keys = key_set(ext_table);
+		temp_int_keys = (const char **)int_keys;
+		temp_ext_keys = (const char **)ext_keys;
+		while (*temp_int_keys != NULL || *temp_ext_keys != NULL)
+		{
+			if (*temp_int_keys != NULL)
+			{
+				cur_statistics = get_table(int_table, *temp_int_keys);
+				total_statistics[0].rx += cur_statistics->rx;
+				total_statistics[0].tx += cur_statistics->tx;
+				printf("|%18s|%24lu|%24lu", *temp_int_keys, cur_statistics->rx, cur_statistics->tx);
+				temp_int_keys++;
+			}
+			else
+				printf("|%18s|%24s|%24s", "", "", "");
+			if (*temp_ext_keys != NULL)
+			{
+				cur_statistics = get_table(ext_table, *temp_ext_keys);
+				total_statistics[1].rx += cur_statistics->rx;
+				total_statistics[1].tx += cur_statistics->tx;
+				printf("|%18s|%24lu|%24lu|\n", *temp_ext_keys, cur_statistics->rx, cur_statistics->tx);
+				temp_ext_keys++;
+			}
+			else
+				printf("|%18s|%24s|%24s|\n", "", "", "");
+		}
+		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
+		printf("|%71s%66s|\n", "TOTAL", " ");
+		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
+		printf("|%18s|%24lu|%24lu", "", total_statistics[0].rx, total_statistics[0].tx);
+		printf("|%18s|%24lu|%24lu|\n", "", total_statistics[1].rx, total_statistics[1].tx);
+		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
+		free(ext_keys);
+		free(int_keys);
+	}
+	fflush(stdout);
+}
+
 /* Print out statistics on packets dropped */
 static void
 print_stats(void)
@@ -189,6 +276,7 @@ l2fwd_simple_forward(struct rte_mbuf *m, unsigned portid)
 {
 	unsigned dst_port;
 	int sent;
+	int	j;
 	struct rte_eth_dev_tx_buffer *buffer;
 
 	dst_port = l2fwd_dst_ports[portid];
@@ -199,7 +287,11 @@ l2fwd_simple_forward(struct rte_mbuf *m, unsigned portid)
 	buffer = tx_buffer[dst_port];
 	sent = rte_eth_tx_buffer(dst_port, 0, buffer, m);
 	if (sent)
+	{
+		for (j = 0; j < sent; j++)
+			ntk_add_packet_length(buffer->pkts[j], dst_port, TX);
 		port_statistics[dst_port].tx += sent;
+	}
 }
 /* >8 End of simple forward. */
 
@@ -216,48 +308,6 @@ ntk_print_packet_data_to_hex(struct rte_mbuf *m)
                         printf("\n");
         }
         printf("\n");
-}
-
-static void
-ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, enum e_direction type)
-{
-	struct rte_ether_hdr	*eth_hdr;
-	struct rte_ipv4_hdr		*ip_hdr;
-	char					src_ip_str[INET_ADDRSTRLEN];
-	char					dst_ip_str[INET_ADDRSTRLEN];
-
-	eth_hdr = rte_pktmbuf_mtod(m, struct rte_ether_hdr *);
-	if (rte_be_to_cpu_16(eth_hdr->ether_type) == RTE_ETHER_TYPE_IPV4) {
-	    ip_hdr = (struct rte_ipv4_hdr *)(eth_hdr + 1); // Add the size of the Ethernet header
-		inet_ntop(AF_INET, (void *)&ip_hdr->dst_addr, dst_ip_str, INET_ADDRSTRLEN);
-		inet_ntop(AF_INET, (void *)&ip_hdr->src_addr, src_ip_str, INET_ADDRSTRLEN);
-		ntk_put_table(packet_statistics[port_id], src_ip_str, m->pkt_len, type);
-	}
-}
-
-static void
-ntk_print_statistics(void)
-{
-	unsigned int	portid;
-	Table			*cur_table;
-	statistics		*cur_statistics;
-	const void		**keys;
-	const char		**temp;
-
-	for (portid = 0; portid < RTE_MAX_ETHPORTS; portid++) {
-		/* skip disabled ports */
-		if ((l2fwd_enabled_port_mask & (1 << portid)) == 0)
-			continue;
-		cur_table = packet_statistics[portid];
-		keys = key_set(cur_table);
-		for (temp = (const char **)keys; *temp != NULL; temp++)
-		{
-			cur_statistics = get_table(cur_table, *temp);
-			printf("%s : tx=%lu, rx=%lu\n", *temp, cur_statistics->tx, cur_statistics->rx);
-		}
-		free(keys);
-	}
-	fflush(stdout);
 }
 
 /* main processing loop */
@@ -315,6 +365,8 @@ l2fwd_main_loop(void)
 				sent = rte_eth_tx_buffer_flush(portid, 0, buffer);
 				if (sent)
 				{
+					for (j = 0; j < sent; j++)
+						ntk_add_packet_length(buffer->pkts[j], portid, TX);
 					port_statistics[portid].tx += sent;
 				}
 
@@ -364,6 +416,8 @@ l2fwd_main_loop(void)
 		}
 		/* >8 End of read packet from RX queues. */
 	}
+	if (packet_statistics[portid] != NULL)
+		free_table(packet_statistics[portid]);
 }
 
 static int
