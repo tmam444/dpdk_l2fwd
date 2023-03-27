@@ -139,7 +139,7 @@ ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, enum e_direction
 static void
 ntk_print_statistics(void)
 {
-	unsigned int	int_portid, ext_portid, i, ip_count = 0;
+	unsigned int	int_portid, ext_portid, i;;
 	Table			*int_table, *ext_table;
 	statistics		*cur_statistics;
 	statistics		total_statistics[2];
@@ -172,7 +172,6 @@ ntk_print_statistics(void)
 			if (*temp_int_keys != NULL)
 			{
 				cur_statistics = get_table(int_table, *temp_int_keys);
-				ip_count++;
 				total_statistics[0].rx += cur_statistics->rx;
 				total_statistics[0].tx += cur_statistics->tx;
 				printf("|%18s|%24lu|%24lu", *temp_int_keys, cur_statistics->rx, cur_statistics->tx);
@@ -183,7 +182,6 @@ ntk_print_statistics(void)
 			if (*temp_ext_keys != NULL)
 			{
 				cur_statistics = get_table(ext_table, *temp_ext_keys);
-				ip_count++;
 				total_statistics[1].rx += cur_statistics->rx;
 				total_statistics[1].tx += cur_statistics->tx;
 				printf("|%18s|%24lu|%24lu|\n", *temp_ext_keys, cur_statistics->rx, cur_statistics->tx);
@@ -195,8 +193,8 @@ ntk_print_statistics(void)
 		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
 		printf("|%71s%66s|\n", "TOTAL", " ");
 		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
-		printf("|%18u|%24lu|%24lu", ip_count, total_statistics[0].rx, total_statistics[0].tx);
-		printf("|%18u|%24lu|%24lu|\n", ip_count, total_statistics[1].rx, total_statistics[1].tx);
+		printf("|%18s|%24lu|%24lu", "", total_statistics[0].rx, total_statistics[0].tx);
+		printf("|%18s|%24lu|%24lu|\n", "", total_statistics[1].rx, total_statistics[1].tx);
 		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
 		free(ext_keys);
 		free(int_keys);
