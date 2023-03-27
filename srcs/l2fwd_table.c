@@ -6,7 +6,7 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 16:28:39 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/27 10:58:29 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/27 15:24:07 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ unsigned int ntk_hash(const void *__key)
 
     while ((c = *key++))
         hash = (((hash << 5) + hash) + c) % TABLE_SIZE;
-    return (hash % TABLE_SIZE);
+    return (hash);
 }
 
 void	ntk_put_table(Table *table, const char *__key, uint64_t packet_size, enum e_direction type)

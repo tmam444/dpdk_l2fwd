@@ -1,34 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   l2fwd.h                                            :+:      :+:    :+:   */
+/*   list.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/03/23 11:08:53 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/27 16:54:45 by chulee           ###   ########.fr       */
+/*   Created: 2023/03/27 13:45:43 by chulee            #+#    #+#             */
+/*   Updated: 2023/03/27 16:45:34 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef L2FWD_H
-# define L2FWD_H
-# include "table.h"
-# include "list.h"
-# include <stdint.h>
-# include <string.h>
+#ifndef LIST_H
+# define LIST_H
+# include <stdlib.h>
+# include <assert.h>
 
-enum e_direction {
-	RX,
-	TX
-};
+typedef struct s_list {
+	void			*value;
+	struct s_list	*next;
+} list;
 
-typedef struct s_statistics {
-	uint64_t	tx;
-	uint64_t	rx;
-} statistics;
-
-int				ntk_compare(const void *x, const void *y);
-void			ntk_put_table(Table *table, const char *__key, uint64_t __value, enum e_direction type);
-unsigned int	ntk_hash(const void *__key);
+list*	create_list(void *value);
+list*	list_push(list *lst, void *value);
 
 #endif
