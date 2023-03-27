@@ -140,7 +140,7 @@ static void
 ntk_print_statistics(void)
 {
 	unsigned int	int_portid, ext_portid;
-	int				i, j;
+	int				i;
 	Table			*int_table, *ext_table;
 	statistics		*cur_statistics;
 	statistics		total_statistics[2];

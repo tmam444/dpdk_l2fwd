@@ -6,7 +6,7 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 16:28:39 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/23 18:20:09 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/27 10:58:29 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,20 +40,27 @@ unsigned int ntk_hash(const void *__key)
 
 void	ntk_put_table(Table *table, const char *__key, uint64_t packet_size, enum e_direction type)
 {
+	char		*key;
 	statistics	*prev_value = get_table(table, __key);
-	char		*key = malloc(strlen(__key) + 1);
 	statistics	*value = malloc(sizeof(statistics));
 
-	assert(key != NULL && value != NULL);
+	assert(value != NULL);
 	if (prev_value != NULL)
+	{
+		key = (char *)__key;
 		memcpy(value, prev_value, sizeof(statistics));
+	}
 	else
+	{
+		key = malloc(strlen(__key) + 1);
+		assert(key != NULL);
+		strcpy(key, __key);
 		memset(value, 0, sizeof(statistics));
+	}
 	if (type == RX)
 		value->rx += packet_size;
 	else if (type == TX)
 		value->tx += packet_size;
-	strcpy(key, __key);
 	prev_value = put_table(table, key, value);
 	if (prev_value != NULL)
 		free(prev_value);
@@ -67,6 +74,8 @@ int	main(void)
 	const void	**keys;
 	const char	**temp;
 
+	ntk_put_table(table, "192.168.0.1", 123, RX);
+	ntk_put_table(table, "192.168.100.84", 456, RX);
 	ntk_put_table(table, "192.168.0.1", 123, RX);
 	ntk_put_table(table, "192.168.100.84", 456, RX);
 	cur_statistics = get_table(table, "192.168.0.1");

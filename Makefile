@@ -6,7 +6,7 @@
 #    By: chulee <chulee@nstek.com>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/21 14:04:03 by chulee            #+#    #+#              #
-#    Updated: 2023/03/23 11:47:21 by chulee           ###   ########.fr        #
+#    Updated: 2023/03/24 18:57:54 by chulee           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ SRCS=$(wildcard srcs/*.c)
 OBJS = $(addprefix objs/, $(notdir $(SRCS:.c=.o)))
 CC = cc
 CFLAGS = -O3 -I./includes $(shell pkg-config --cflags libdpdk) -DALLOW_EXPERIMENTAL_API
-LDFLAGS = $(shell pkg-config --libs libdpdk)
+LDFLAGS = $(shell pkg-config --libs libdpdk) -fsanitize=address -g
 OBJ_FILES = $(OBJS)
 
 $(NAME) : $(OBJ_FILES)
