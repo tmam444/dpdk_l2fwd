@@ -6,7 +6,7 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/23 11:08:53 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/23 14:08:31 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/27 11:46:17 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ enum e_direction {
 };
 
 typedef struct s_statistics {
+	uint64_t	ip_count;
 	uint64_t	tx;
 	uint64_t	rx;
 } statistics;

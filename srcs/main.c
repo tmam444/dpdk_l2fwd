@@ -143,7 +143,7 @@ ntk_print_statistics(void)
 	int				i;
 	Table			*int_table, *ext_table;
 	statistics		*cur_statistics;
-	statistics		total_statistics[2];
+	statistics		print_statistics[2];
 	const void		**int_keys, **ext_keys;
 	const char		**temp_int_keys, **temp_ext_keys;
 	const char		clr[] = { 27, '[', '2', 'J', '\0' };
@@ -153,10 +153,7 @@ ntk_print_statistics(void)
 	printf("%s%s", clr, topLeft);
 	for (i = 0; i < nb_port_pair_params; i++)
 	{
-		total_statistics[0].rx = 0;
-		total_statistics[0].tx = 0;
-		total_statistics[1].rx = 0;
-		total_statistics[1].tx = 0;
+		memset(print_statistics, 0, sizeof(statistics) * 2);
 		int_portid = port_pair_params_array[i].port[0];
 		ext_portid = port_pair_params_array[i].port[1];
 		printf("port pair : (%d) - (%d)\n", int_portid, ext_portid);
@@ -176,8 +173,9 @@ ntk_print_statistics(void)
 			if (*temp_int_keys != NULL)
 			{
 				cur_statistics = get_table(int_table, *temp_int_keys);
-				total_statistics[0].rx += cur_statistics->rx;
-				total_statistics[0].tx += cur_statistics->tx;
+				print_statistics[0].ip_count++;
+				print_statistics[0].rx += cur_statistics->rx;
+				print_statistics[0].tx += cur_statistics->tx;
 				printf("|%18s|%24lu|%24lu", *temp_int_keys, cur_statistics->rx, cur_statistics->tx);
 				temp_int_keys++;
 			}
@@ -186,8 +184,9 @@ ntk_print_statistics(void)
 			if (*temp_ext_keys != NULL)
 			{
 				cur_statistics = get_table(ext_table, *temp_ext_keys);
-				total_statistics[1].rx += cur_statistics->rx;
-				total_statistics[1].tx += cur_statistics->tx;
+				print_statistics[1].ip_count++;
+				print_statistics[1].rx += cur_statistics->rx;
+				print_statistics[1].tx += cur_statistics->tx;
 				printf("|%18s|%24lu|%24lu|\n", *temp_ext_keys, cur_statistics->rx, cur_statistics->tx);
 				temp_ext_keys++;
 			}
@@ -197,8 +196,8 @@ ntk_print_statistics(void)
 		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
 		printf("|%71s%66s|\n", "TOTAL", " ");
 		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
-		printf("|%18s|%24lu|%24lu", "", total_statistics[0].rx, total_statistics[0].tx);
-		printf("|%18s|%24lu|%24lu|\n", "", total_statistics[1].rx, total_statistics[1].tx);
+		printf("|%18lu|%24lu|%24lu", print_statistics[0].ip_count, print_statistics[0].rx, print_statistics[0].tx);
+		printf("|%18lu|%24lu|%24lu|\n", print_statistics[1].ip_count, print_statistics[1].rx, print_statistics[1].tx);
 		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
 		free(ext_keys);
 		free(int_keys);
