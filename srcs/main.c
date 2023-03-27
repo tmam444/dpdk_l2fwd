@@ -139,7 +139,7 @@ ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, enum e_direction
 static void
 ntk_print_statistics(void)
 {
-	unsigned int	int_portid, ext_portid, i;;
+	unsigned int	int_portid, ext_portid, i;
 	Table			*int_table, *ext_table;
 	statistics		*cur_statistics;
 	statistics		total_statistics[2];
@@ -412,8 +412,11 @@ l2fwd_main_loop(void)
 		}
 		/* >8 End of read packet from RX queues. */
 	}
-	if (packet_statistics[portid] != NULL)
-		free_table(packet_statistics[portid]);
+	for (i = 0; i < qconf->n_rx_port; i++) {
+		portid = qconf->rx_port_list[i];
+		if (packet_statistics[portid] != NULL)
+			free_table(packet_statistics[portid]);
+	}
 }
 
 static int
