@@ -166,9 +166,9 @@ ntk_print_statistics(void)
 		ext_keys = key_set(ext_table);
 		temp_int_keys = (const char **)int_keys;
 		temp_ext_keys = (const char **)ext_keys;
+		j = 0;
 		while (*temp_int_keys != NULL || *temp_ext_keys != NULL)
 		{
-			j = 0;
 			if (*temp_int_keys != NULL)
 			{
 				cur_statistics = get_table(int_table, *temp_int_keys);
@@ -193,6 +193,8 @@ ntk_print_statistics(void)
 				printf("|%18s|%24s|%24s|\n", "", "", "");
 			j++;
 		}
+		if (j < print_count)
+			printf("|%70s%67s|\n","...","");
 		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
 		printf("|%71s%66s|\n", "TOTAL", " ");
 		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
