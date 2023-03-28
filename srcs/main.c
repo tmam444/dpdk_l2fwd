@@ -125,12 +125,10 @@ ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, enum e_direction
 	struct rte_ether_hdr	*eth_hdr;
 	struct rte_ipv4_hdr		*ip_hdr;
 	char					src_ip_str[INET_ADDRSTRLEN];
-	char					dst_ip_str[INET_ADDRSTRLEN];
 
 	eth_hdr = rte_pktmbuf_mtod(m, struct rte_ether_hdr *);
 	if (rte_be_to_cpu_16(eth_hdr->ether_type) == RTE_ETHER_TYPE_IPV4) {
 	    ip_hdr = (struct rte_ipv4_hdr *)(eth_hdr + 1); // Add the size of the Ethernet header
-		inet_ntop(AF_INET, (void *)&ip_hdr->dst_addr, dst_ip_str, INET_ADDRSTRLEN);
 		inet_ntop(AF_INET, (void *)&ip_hdr->src_addr, src_ip_str, INET_ADDRSTRLEN);
 		ntk_put_table(packet_statistics[port_id], src_ip_str, m->pkt_len, type);
 	}
@@ -139,6 +137,7 @@ ntk_add_packet_length(struct rte_mbuf *m, unsigned int port_id, enum e_direction
 static void
 ntk_print_statistics(void)
 {
+	const int		print_count = 30;
 	unsigned int	int_portid, ext_portid, i, j;
 	Table			*int_table, *ext_table;
 	statistics		*cur_statistics;
@@ -169,12 +168,14 @@ ntk_print_statistics(void)
 		temp_ext_keys = (const char **)ext_keys;
 		while (*temp_int_keys != NULL || *temp_ext_keys != NULL)
 		{
+			j = 0;
 			if (*temp_int_keys != NULL)
 			{
 				cur_statistics = get_table(int_table, *temp_int_keys);
 				total_statistics[0].rx += cur_statistics->rx;
 				total_statistics[0].tx += cur_statistics->tx;
-				printf("|%18s|%24lu|%24lu", *temp_int_keys, cur_statistics->rx, cur_statistics->tx);
+				if (j < print_count)
+					printf("|%18s|%24lu|%24lu", *temp_int_keys, cur_statistics->rx, cur_statistics->tx);
 				temp_int_keys++;
 			}
 			else
@@ -184,11 +185,13 @@ ntk_print_statistics(void)
 				cur_statistics = get_table(ext_table, *temp_ext_keys);
 				total_statistics[1].rx += cur_statistics->rx;
 				total_statistics[1].tx += cur_statistics->tx;
-				printf("|%18s|%24lu|%24lu|\n", *temp_ext_keys, cur_statistics->rx, cur_statistics->tx);
+				if (j < print_count)
+					printf("|%18s|%24lu|%24lu|\n", *temp_ext_keys, cur_statistics->rx, cur_statistics->tx);
 				temp_ext_keys++;
 			}
 			else
 				printf("|%18s|%24s|%24s|\n", "", "", "");
+			j++;
 		}
 		printf("|-----------------------------------------------------------------------------------------------------------------------------------------|\n");
 		printf("|%71s%66s|\n", "TOTAL", " ");
