@@ -6,14 +6,13 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/23 11:08:53 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/27 16:54:45 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/28 17:37:31 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef L2FWD_H
 # define L2FWD_H
 # include "table.h"
-# include "list.h"
 # include <stdint.h>
 # include <string.h>
 
