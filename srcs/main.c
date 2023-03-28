@@ -246,21 +246,6 @@ l2fwd_simple_forward(struct rte_mbuf *m, unsigned portid)
 }
 /* >8 End of simple forward. */
 
-static void
-ntk_print_packet_data_to_hex(struct rte_mbuf *m)
-{
-        uint8_t *data = rte_pktmbuf_mtod(m, uint8_t *);
-        int     i;
-
-        for (i = 0; i < m->pkt_len; i++)
-        {
-                printf("%02X ", data[i]);
-                if ((i + 1) % 16 == 0)
-                        printf("\n");
-        }
-        printf("\n");
-}
-
 /* main processing loop */
 static void
 l2fwd_main_loop(void)

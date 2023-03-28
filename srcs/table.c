@@ -6,7 +6,7 @@
 /*   By: chulee <chulee@nstek.com>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/22 15:01:28 by chulee            #+#    #+#             */
-/*   Updated: 2023/03/23 18:23:13 by chulee           ###   ########.fr       */
+/*   Updated: 2023/03/28 15:52:20 by chulee           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 Table*	new_table(unsigned int _size, int _cmp(const void *x, const void *y), \
 					unsigned int _hash(const void *key))
 {
-	Table	*ret;
-	int		i;
+	Table			*ret;
+	unsigned int	i;
 
 	assert(_size > 0 && _cmp != NULL && _hash != NULL);
 	ret = malloc(sizeof(Table));
